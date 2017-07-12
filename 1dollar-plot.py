@@ -10,7 +10,7 @@ import matplotlib.patches as patches
 import matplotlib.path as path
 
 N = 100
-CyclesPerIteration = 10
+CyclesPerIteration = 50
 Amount = 100
 Alpha = 0.075
 
@@ -20,9 +20,9 @@ ax.set_xlim(0, N)
 ax.set_ylim(0, 6 * Amount)
 
 data = np.ones(N, dtype=np.int32) * Amount
-lo = np.ones(N, dtype=np.float32) * Amount * 6
+lo = np.ones(N, dtype=np.float32) * Amount
 hi = np.zeros(N, dtype=np.float32)
-avg = data.copy()
+avg = np.zeros(N, dtype=np.float32)
 cumsum = np.zeros(N, dtype=np.float32)
 
 left = np.arange(N, dtype=np.int32)
