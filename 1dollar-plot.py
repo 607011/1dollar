@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
 import random
+import argparse
 import numpy as np
-# import matplotlib
-# matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.patches as patches
 import matplotlib.path as path
 
 N = 100
-CyclesPerIteration = 50
+CyclesPerIteration = 10
 Amount = 100
-Alpha = 0.075
+verbose = True
+write_movie = False
 
 fig, ax = plt.subplots()
 fig.canvas.set_window_title('Give away money')
@@ -22,6 +22,7 @@ ax.set_xlabel('people')
 ax.set_ylabel('money')
 
 counter_text = ax.text(2, Amount * 6 - 30, '', fontsize=8, fontweight='bold')
+stddev_text = ax.text(2, Amount * 6 - 50, '', fontsize=8)
 
 data = np.ones(N, dtype=np.int32) * Amount
 lo = np.ones(N, dtype=np.float32) * Amount
@@ -39,13 +40,13 @@ bar_codes = np.ones(bar_nverts, dtype=int) * path.Path.LINETO
 bar_codes[0::5] = path.Path.MOVETO
 bar_codes[4::5] = path.Path.CLOSEPOLY
 bar_verts[0::5, 0] = left
-bar_verts[0::5, 1] = np.zeros(N) # bottom
+bar_verts[0::5, 1] = np.zeros(N)  # bottom
 bar_verts[1::5, 0] = left
-bar_verts[1::5, 1] = np.zeros(N) # top
+bar_verts[1::5, 1] = np.zeros(N)  # top
 bar_verts[2::5, 0] = right
-bar_verts[2::5, 1] = np.zeros(N) # top
+bar_verts[2::5, 1] = np.zeros(N)  # top
 bar_verts[3::5, 0] = right
-bar_verts[3::5, 1] = np.zeros(N) # bottom
+bar_verts[3::5, 1] = np.zeros(N)  # bottom
 bar_path = path.Path(bar_verts, bar_codes)
 bar_patch = patches.PathPatch(
     bar_path, facecolor='#7b9bce', edgecolor='#a3bfed', lw=1)
@@ -97,38 +98,48 @@ random.seed()
 
 counter = 0
 
-def animate(i):
-	global lo, hi, avg, cumsum, counter
-	for j in range(CyclesPerIteration):
-		for k in range(N):
-			if data[k] > 0:
-				while True: # make sure to give away money to another person
-					to = random.randrange(N)
-					if to != k:	break
-				data[k] -= 1
-				data[to] += 1
-	bar_verts[1::5, 1] = data
-	bar_verts[2::5, 1] = data
-	lo = np.fmin(lo, data)
-	lower_verts[0::2, 1] = lo
-	lower_verts[1::2, 1] = lo
-	hi = np.fmax(hi, data)
-	upper_verts[0::2, 1] = hi
-	upper_verts[1::2, 1] = hi
-	cumsum = cumsum + data
-	counter += 1
-	counter_text.set_text(str(counter))
-	avg = cumsum / counter
-	avg_verts[0::2, 1] = avg
-	avg_verts[1::2, 1] = avg
-	return [bar_patch, upper_patch, lower_patch, avg_patch, counter_text]
 
+def animate(_):
+    global lo, hi, avg, cumsum, counter
+    for j in range(CyclesPerIteration):
+        for k in range(N):
+            if data[k] > 0:
+                while True:  # make sure to give away money to another person
+                    to = random.randrange(N)
+                    if to != k:
+                        break
+                data[k] -= 1
+                data[to] += 1
+        counter += 1
+        lo = np.fmin(lo, data)
+        hi = np.fmax(hi, data)
+        cumsum = cumsum + data
+        avg = cumsum / counter
+    bar_verts[1::5, 1] = data
+    bar_verts[2::5, 1] = data
+    lower_verts[0::2, 1] = lo
+    lower_verts[1::2, 1] = lo
+    upper_verts[0::2, 1] = hi
+    upper_verts[1::2, 1] = hi
+    counter_text.set_text('# {:d}'.format(counter))
+    avg_verts[0::2, 1] = avg
+    avg_verts[1::2, 1] = avg
+    stddev_text.set_text('σ = {:.2f}'.format(np.std(avg)))
+    if write_movie:
+        moviewriter.grab_frame()
+    if verbose:
+        print("\r{} iterations ...".format(counter), end='', flush=True)
+    return [bar_patch, upper_patch, lower_patch, avg_patch, counter_text, stddev_text]
+
+
+if write_movie:
+    Writer = animation.writers['ffmpeg']
+    moviewriter = Writer(fps=25, bitrate=2000)
+    moviewriter.setup(fig=fig, outfile='give-away-1$-B.mp4', dpi=72)
 
 ani = animation.FuncAnimation(fig, animate, data, interval=1, blit=True)
-# Writer = animation.writers['ffmpeg']
-# writer = Writer(fps=30, metadata=dict(artist='Me'), bitrate=2500)
-
-# ani.save('give_away_money.mp4', writer=writer)
 
 plt.show()
 
+if write_movie:
+    moviewriter.finish()
