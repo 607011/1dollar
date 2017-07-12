@@ -18,6 +18,10 @@ fig, ax = plt.subplots()
 fig.canvas.set_window_title('Give away money')
 ax.set_xlim(0, N)
 ax.set_ylim(0, 6 * Amount)
+ax.set_xlabel('people')
+ax.set_ylabel('money')
+
+counter_text = ax.text(2, Amount * 6 - 30, '', fontsize=8, fontweight='bold')
 
 data = np.ones(N, dtype=np.int32) * Amount
 lo = np.ones(N, dtype=np.float32) * Amount
@@ -113,10 +117,11 @@ def animate(i):
 	upper_verts[1::2, 1] = hi
 	cumsum = cumsum + data
 	counter += 1
+	counter_text.set_text(str(counter))
 	avg = cumsum / counter
 	avg_verts[0::2, 1] = avg
 	avg_verts[1::2, 1] = avg
-	return [bar_patch, upper_patch, lower_patch, avg_patch]
+	return [bar_patch, upper_patch, lower_patch, avg_patch, counter_text]
 
 
 ani = animation.FuncAnimation(fig, animate, data, interval=1, blit=True)
