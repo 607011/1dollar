@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import random
 import argparse
@@ -8,24 +9,34 @@ import matplotlib.animation as animation
 import matplotlib.patches as patches
 import matplotlib.path as path
 
-N = 100
-CyclesPerIteration = 10
-Amount = 100
-verbose = True
-write_movie = False
+
+parser = argparse.ArgumentParser(description='Randomly give money away.')
+parser.add_argument('-n', '--number', type=int, help='Number of participants.', default=100)
+parser.add_argument('-a', '--amount', type=int, help='Money each participant owns at the beginning.', default=100)
+parser.add_argument('-i', '--iterations', type=int, help='Iterations per clock tick. Higher values speed up simulation.', default=10)
+parser.add_argument('-o', '--output', type=str, help='Video file to write to.', default=None)
+parser.add_argument('-v', '--verbose', help='Be verbose', action='store_true')
+args = parser.parse_args()
+
+N = args.number
+amount = args.amount
+iterations_per_clocktick = args.iterations
+verbose = args.verbose
+output = args.output
+write_movie = type(output) is str
 
 fig, ax = plt.subplots()
 fig.canvas.set_window_title('Give away money')
 ax.set_xlim(0, N)
-ax.set_ylim(0, 6 * Amount)
+ax.set_ylim(0, 6 * amount)
 ax.set_xlabel('people')
 ax.set_ylabel('money')
 
-counter_text = ax.text(2, Amount * 6 - 30, '', fontsize=8, fontweight='bold')
-stddev_text = ax.text(2, Amount * 6 - 50, '', fontsize=8)
+counter_text = ax.text(2, amount * 6 - 30, '', fontsize=8, fontweight='bold')
+stddev_text = ax.text(2, amount * 6 - 50, '', fontsize=8)
 
-data = np.ones(N, dtype=np.int32) * Amount
-lo = np.ones(N, dtype=np.float32) * Amount
+data = np.ones(N, dtype=np.int32) * amount
+lo = np.ones(N, dtype=np.float32) * amount
 hi = np.zeros(N, dtype=np.float32)
 avg = np.zeros(N, dtype=np.float32)
 cumsum = np.zeros(N, dtype=np.float32)
@@ -101,7 +112,7 @@ counter = 0
 
 def animate(_):
     global lo, hi, avg, cumsum, counter
-    for j in range(CyclesPerIteration):
+    for j in range(iterations_per_clocktick):
         for k in range(N):
             if data[k] > 0:
                 while True:  # make sure to give away money to another person
