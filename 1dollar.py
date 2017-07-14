@@ -16,9 +16,10 @@ for i in range(1, 1000):
     for j in range(i * Cycles):
         for k in range(N):
             if p[k] > 0:
-                while True: # make sure to give away money to another person
+                while True:  # make sure to give away money to another person
                     to = random.randrange(N)
-                    if to != k:	break
+                    if to != k:
+                        break
                 p[k] -= 1
                 p[to] += 1
     q = sorted(p)

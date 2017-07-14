@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser(description='Randomly give money away.')
 parser.add_argument('-n', '--number', type=int, help='Number of participants.', default=100)
 parser.add_argument('-a', '--amount', type=int, help='Money each participant owns at the beginning.', default=100)
 parser.add_argument('-i', '--iterations', type=int, help='Iterations per clock tick. Higher values speed up simulation.', default=10)
-parser.add_argument('-o', '--output', type=str, help='Video file to write to.', default=None)
+parser.add_argument('-o', '--output', type=str, help='MP4 file to write video to.', default=None)
 parser.add_argument('-v', '--verbose', help='Be verbose', action='store_true')
 args = parser.parse_args()
 
@@ -144,9 +144,8 @@ def animate(_):
 
 
 if write_movie:
-    Writer = animation.writers['ffmpeg']
-    moviewriter = Writer(fps=25, bitrate=2000)
-    moviewriter.setup(fig=fig, outfile='give-away-1$-B.mp4', dpi=72)
+    moviewriter = animation.writers['ffmpeg'](fps=25, bitrate=1200)
+    moviewriter.setup(fig=fig, outfile=output, dpi=72)
 
 ani = animation.FuncAnimation(fig, animate, data, interval=1, blit=True)
 
@@ -154,3 +153,6 @@ plt.show()
 
 if write_movie:
     moviewriter.finish()
+
+if verbose:
+    print('\nExiting ...\n')
